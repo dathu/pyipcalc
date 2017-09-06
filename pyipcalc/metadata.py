@@ -8,7 +8,7 @@ Information describing the project.
 package = 'pyipcalc'
 project = "Python IP Calculator Module"
 project_no_spaces = project.replace(' ', '')
-version = '2.0.0'
+version = '2.0.1'
 description = 'Python IP Calculator Module'
 authors = ['Christiaan Frans Rademan', 'Dave Kruger']
 authors_string = ', '.join(authors)

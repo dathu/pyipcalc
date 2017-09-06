@@ -9,8 +9,8 @@ Quick Links
 -----------
 
 * `Website <http://www.tachyonic.co.za/pyipcalc>`__.
-* `GITHUB Code <https://github.com/TachyonicProject/pyipcalc>`__.
-* `Issues <https://github.com/TachyonicProject/pyipcalc/issues>`__.
+* `GITHUB Code <https://github.com/TachyonProject/pyipcalc>`__.
+* `Issues <https://github.com/TachyonProject/pyipcalc/issues>`__.
 
 Installation
 ------------
@@ -27,13 +27,13 @@ Installing it is as simple as:
 Source Code
 -----------
 
-Code is hosted on `GitHub <https://github.com/TachyonicProject/pyipcalc>`_. Making the code easy to browse, download, fork, etc. Pull requests are always welcome!
+Code is hosted on `GitHub <https://github.com/TachyonProject/pyipcalc>`_. Making the code easy to browse, download, fork, etc. Pull requests are always welcome!
 
 Clone the project like this:
 
 .. code:: bash
 
-    $ git clone https://github.com/TachyonicProject/pyipcalc.git
+    $ git clone https://github.com/TachyonProject/pyipcalc.git
 
 Once you have cloned the repo or downloaded a tarball from GitHub, you
 can install pyipcalc like this:
