@@ -428,10 +428,18 @@ class IPNetwork(object):
 
     Args:
         prefix (str): IPv4 / IPv6 Prefix. (example 196.25.1.0/24)
+                      If no prefix is given, host prefix is assumed
     """
 
     def __init__(self, prefix):
         self._version = detect_version(prefix)
+
+        if not '/' in prefix:
+            if self._version == 4:
+                self._bits = "32"
+            else:
+                self._bits = "128"
+            prefix += '/' + self._bits
 
         try:
             self._ip, self._bits = prefix.split('/')
