@@ -30,6 +30,12 @@ class IPCalc(unittest.TestCase):
         self.assertEqual(False, contains(net3, net))
         self.assertEqual('192.168.0.0/24', pyipcalc.supernet(net,
                          net3).prefix())
+        self.assertEqual(net[5].prefix(), '192.168.0.5/32')
+        for i,ip in enumerate(net[0:1]):
+            self.assertEqual(ip._ip, 3232235520 + i)
+        for i,ip in enumerate(net[0:3:31]):
+            self.assertEqual(ip._ip, 3232235520 + i*2)
+
 
     def test_ipv6_network(self):
         net = pyipcalc.IPNetwork('fff0::/64')

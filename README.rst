@@ -136,6 +136,25 @@ Development Module
 	10.10.10.254
 	>>> 
 
+Slicing and indexing is also possible. With Slicing the start ant stop can either be integers or IPNetwork objects:
+
+.. code:: python
+
+    >>> pyipcalc.IPNetwork('192.0.2.0/24')[5]
+    192.0.2.5/32
+
+    >>> pyipcalc.IPNetwork('192.0.2.0/29')[1:-1]
+    [192.0.2.1/32, 192.0.2.2/32, 192.0.2.3/32, 192.0.2.4/32, 192.0.2.5/32, 192.0.2.6/32]
+
+    >>> pyipcalc.IPNetwork('192.0.2.0/29')[2:6:31]
+    [192.0.2.2/31, 192.0.2.4/31, 192.0.2.6/31]
+
+    >>> net1 = pyipcalc.IPNetwork('192.0.2.2')
+    >>> net2 = pyipcalc.IPNetwork('192.0.2.6')
+    >>> pyipcalc.IPNetwork('192.0.2.0/29')[net1:net2:31]
+    [192.0.2.2/31, 192.0.2.4/31, 192.0.2.6/31]
+
+
 Converting IPv4 to 32bit Decimal to store in database.
 
 .. code:: python

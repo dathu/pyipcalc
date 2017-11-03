@@ -162,6 +162,45 @@ def bit_length(bits, version=4):
         return ips
 
 
+def checkIndex(key, size):
+    """
+
+    :param key: index entry of list
+    :param size: Subnet size
+    :return: integer of fixed up key
+    """
+    if abs(key) > size:
+        raise IndexError("index out of range")
+    elif key < 0:
+        key = size + key
+    return key
+
+
+def getItem(ipn, key):
+    """getItem implementation
+
+    :param ipn: (int) IPv4 / IPv6 Network object
+    :param key: integer or slice object
+    :return: IPNetwork object, or list in the case of slice
+    """
+    if isinstance(key, int):
+        key = checkIndex(key, ipn._size)
+        return IPNetwork(int_to_ip(ipn._network + key, ipn.version()))
+    elif isinstance(key, slice):
+        # Users have the ability to either specify
+        # Integer as slice, or IPNetwork object
+        start = key.start._ip - ipn._ip if isinstance(key.start, IPNetwork) else key.start
+        stop = key.stop._ip - ipn._ip if isinstance(key.stop, IPNetwork) else key.stop
+        # Fixing up index keys (if they were set)
+        start = checkIndex(start, ipn._size) if start is not None else None
+        stop = checkIndex(stop, ipn._size) if stop is not None else None
+        ipn = IPIter(ipn.prefix(),
+                     start = start,
+                     blocks = key.step,
+                     stop = stop)
+        return [ip for ip in ipn]
+
+
 def ip_to_int(ip):
     """Convert IP to Integer representation.
 
@@ -374,14 +413,14 @@ def bits_int_mask(bits, version):
 
 
 class IPIter(object):
-    """Itereration Class for IPNetwork.
+    """Iteration Class for IPNetwork.
 
     Args:
         prefix (str): IPv4 / IPv6 Prefix. (example 196.25.1.0/24)
         blocks (int): Iteration bit size.
     """
 
-    def __init__(self, prefix, blocks=None):
+    def __init__(self, prefix, blocks=None, start=None, stop=None):
         self._version = detect_version(prefix)
 
         if blocks is None:
@@ -389,6 +428,9 @@ class IPIter(object):
                 blocks = 32
             else:
                 blocks = 128
+
+        if start is None:
+            start = 0
 
         self._prefix = prefix
         self._ip, self._bits = self._prefix.split('/')
@@ -399,12 +441,13 @@ class IPIter(object):
         self._blocks_bits = blocks
         self._size = bit_length(self._bits, self._version)
         self._int = ip_to_int(self._ip)
-        self._intend = self._int + self._size - 1
 
-        # Don't want to return network and broadcast...
-        if self._version == 4 and blocks == 32 and self._size > 2:
-            self._int += 1
-            self._intend -= 1
+        if stop is None:
+            self._intend = self._int + self._size - 1
+        else:
+            self._intend = self._int + stop
+
+        self._int += start
 
     def __iter__(self):
         return self
@@ -459,6 +502,9 @@ class IPNetwork(object):
 
     def __add__(self, netobj):
         return supernet(self, netobj)
+
+    def __getitem__(self, key):
+        return getItem(self, key)
 
     def __iter__(self):
         return IPIter(self.prefix())
@@ -518,6 +564,7 @@ class IPNetwork(object):
                 return(int_to_ip(self._network, self._version))
         else:
             return(int_to_ip(self._network, self._version))
+
 
     def last(self):
         """Last IP Address.
