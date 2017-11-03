@@ -162,17 +162,25 @@ def bit_length(bits, version=4):
         return ips
 
 
-def checkIndex(key, size):
+def checkIndex(key, ipn):
     """
 
     :param key: index entry of list
     :param size: Subnet size
     :return: integer of fixed up key
     """
-    if abs(key) > size:
-        raise IndexError("index out of range")
-    elif key < 0:
-        key = size + key
+    # Users have the ability to either specify
+    # Integer or IPNetwork object as slice
+    if isinstance(key, IPNetwork):
+        if key not in ipn:
+            raise IndexError("index out of range")
+        else:
+            key = key._ip - ipn._network
+    else:
+        if abs(key) > ipn._size:
+            raise IndexError("index out of range")
+        elif key < 0:
+            key = ipn._size + key
     return key
 
 
@@ -184,16 +192,11 @@ def getItem(ipn, key):
     :return: IPNetwork object, or list in the case of slice
     """
     if isinstance(key, int):
-        key = checkIndex(key, ipn._size)
+        key = checkIndex(key, ipn)
         return IPNetwork(int_to_ip(ipn._network + key, ipn.version()))
     elif isinstance(key, slice):
-        # Users have the ability to either specify
-        # Integer as slice, or IPNetwork object
-        start = key.start._ip - ipn._ip if isinstance(key.start, IPNetwork) else key.start
-        stop = key.stop._ip - ipn._ip if isinstance(key.stop, IPNetwork) else key.stop
-        # Fixing up index keys (if they were set)
-        start = checkIndex(start, ipn._size) if start is not None else None
-        stop = checkIndex(stop, ipn._size) if stop is not None else None
+        start = checkIndex(key.start, ipn) if key.start is not None else None
+        stop = checkIndex(key.stop, ipn) if key.stop is not None else None
         ipn = IPIter(ipn.prefix(),
                      start = start,
                      blocks = key.step,
