@@ -143,7 +143,7 @@ Slicing and indexing is also possible. With Slicing the start ant stop can eithe
     >>> pyipcalc.IPNetwork('192.0.2.0/24')[5]
     192.0.2.5/32
 
-    >>> pyipcalc.IPNetwork('192.0.2.0/29')[1:-1]
+    >>> pyipcalc.IPNetwork('192.0.2.0/29')[1:-2]
     [192.0.2.1/32, 192.0.2.2/32, 192.0.2.3/32, 192.0.2.4/32, 192.0.2.5/32, 192.0.2.6/32]
 
     >>> pyipcalc.IPNetwork('192.0.2.0/29')[2:6:31]

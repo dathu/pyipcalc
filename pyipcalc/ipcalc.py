@@ -163,14 +163,14 @@ def bit_length(bits, version=4):
 
 
 def checkIndex(key, ipn):
-    """
+    """ Function to fixup the index for getitem
 
     :param key: index entry of list
     :param size: Subnet size
     :return: integer of fixed up key
     """
     # Users have the ability to either specify
-    # Integer or IPNetwork object as slice
+    # Integer or IPNetwork object as slice.
     if isinstance(key, IPNetwork):
         if key not in ipn:
             raise IndexError("index out of range")
@@ -180,7 +180,11 @@ def checkIndex(key, ipn):
         if abs(key) > ipn._size:
             raise IndexError("index out of range")
         elif key < 0:
-            key = ipn._size + key
+            # When key is negative, we want -1 to be
+            # the last (broadcast) address. Since ._size
+            # is one less than the actual total number
+            # of addresses in the subnet, we add 1
+            key = ipn._size + 1 + key
     return key
 
 
