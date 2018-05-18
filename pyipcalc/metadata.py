@@ -6,13 +6,35 @@ Information describing the project.
 
 # The package name, which is also the "UNIX name" for the project.
 package = 'pyipcalc'
-project = "Python IP Calculator Module"
+project = "Tachyonic Project " + package
 project_no_spaces = project.replace(' ', '')
-version = '2.0.1'
+# Please follow https://www.python.org/dev/peps/pep-0440/
+version = '3.0.0'
 description = 'Python IP Calculator Module'
-authors = ['Christiaan Frans Rademan', 'Dave Kruger']
-authors_string = ', '.join(authors)
-emails = ['christiaan.rademan@gmail.com']
+author = 'Myria Solutions (PTY) Ltd'
+email = 'project@tachyonic.org'
 license = 'BSD3-Clause'
-copyright = '2017 ' + authors_string
-url = 'http://www.tachyonic.co.za/'
+copyright = '2018 ' + author
+url = 'http://www.tachyonic.org'
+identity = project + ' v' + version
+
+# Classifiers
+# <http://pypi.python.org/pypi?%3Aaction=list_classifiers>
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Other Environment',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Information Technology',
+    'Intended Audience :: System Administrators',
+    'License :: OSI Approved :: BSD License',
+    'Natural Language :: English',
+    'Operating System :: POSIX :: Linux',
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3.6',
+    'Topic :: Software Development',
+    'Topic :: Software Development :: Libraries',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Topic :: Software Development :: Libraries :: Application Frameworks',
+    'Topic :: System :: Networking',
+    'Topic :: Internet',
+    ]
