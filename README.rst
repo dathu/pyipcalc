@@ -5,13 +5,6 @@ pyipcalc is module developed for doing simple ip calculations needed by some pyt
 
 Project Status: Production / Active
 
-Quick Links
------------
-
-* `Website <http://www.tachyonic.co.za/pyipcalc>`__.
-* `GITHUB Code <https://github.com/TachyonProject/pyipcalc>`__.
-* `Issues <https://github.com/TachyonProject/pyipcalc/issues>`__.
-
 Installation
 ------------
 

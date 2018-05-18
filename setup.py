@@ -1,128 +1,104 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
-
+# Copyright (c) 2018 Christiaan Frans Rademan.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# * Neither the name of the copyright holders nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+# THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 import imp
-import subprocess
-
-from setuptools import setup, find_packages
-from setuptools.command.test import test as TestCommand
-from distutils import spawn
+import glob
+import shutil
+from distutils import cmd
 
 try:
-    import colorama
-    colorama.init()  # Initialize colorama on Windows
+    from setuptools import setup, Extension, find_packages
+    from setuptools.command.test import test as TestCommand
 except ImportError:
-    pass
+    print('Requires `setuptools` to be installed')
+    print('`pip install setuptools`')
+    exit()
 
-# Add the current directory to the module search path.
-sys.path.insert(0, os.path.abspath('.'))
+# DEFINE ROOT PACKAGE NAME
+PACKAGE = 'pyipcalc'
 
-name = str('pyipcalc')
-module = name
 
-## Constants
-CODE_DIRECTORY = '%s' % module
-print(CODE_DIRECTORY)
-DOCS_DIRECTORY = 'docs'
-TESTS_DIRECTORY = 'tests'
+###############################################################################
+# DO NOT EDIT CODE BELOW THIS POINT ###########################################
+###############################################################################
+
+cmdclass = {}
+MYDIR = os.path.abspath(os.path.dirname(__file__))
+CODE_DIRECTORY = os.path.join(MYDIR, PACKAGE)
+DOCS_DIRECTORY = os.path.join(MYDIR, 'docs')
+TESTS_DIRECTORY = os.path.join(MYDIR, 'tests')
 PYTEST_FLAGS = ['--doctest-modules']
+# Add the source directory to the module search path.
+sys.path.insert(0, MYDIR)
 
-
+# Load Metadata from PACKAGE
 metadata = imp.load_source(
-    'metadata', os.path.join(module, 'metadata.py'))
+    'metadata', os.path.join(MYDIR, CODE_DIRECTORY, 'metadata.py'))
 
 
-## Miscellaneous helper functions
+# Miscellaneous helper functions
+def requirements(path):
+    dependency = []
+    if os.path.exists(os.path.join(os.path.dirname(__file__), path)):
+        with open(os.path.join(os.path.dirname(__file__), path)) as req:
+            dependency = req.read().splitlines()
 
-def get_project_files():
-    """Retrieve a list of project files, ignoring hidden files.
-
-    :return: sorted list of project files
-    :rtype: :class:`list`
-    """
-    if is_git_project() and has_git():
-        return get_git_project_files()
-
-    project_files = []
-    for top, subdirs, files in os.walk('.'):
-        for subdir in subdirs:
-            if subdir.startswith('.'):
-                subdirs.remove(subdir)
-
-        for f in files:
-            if f.startswith('.'):
-                continue
-            project_files.append(os.path.join(top, f))
-
-    return project_files
+    return dependency
 
 
-def is_git_project():
-    return os.path.isdir('.git')
+def list_modules(path, ext='py'):
+    filenames = glob.glob(os.path.join(path, '*.%s' % ext))
+
+    module_names = []
+    for name in filenames:
+        module, ext = os.path.splitext(os.path.basename(name))
+        if module != '__init__':
+            module_names.append(module)
+
+    return module_names
 
 
-def has_git():
-    return bool(spawn.find_executable("git"))
+def list_packages(package):
+    path = os.path.join(MYDIR, package)
+    packages = []
 
+    scan_dir = os.path.join(path)
+    top_dir = "/" + "/".join(scan_dir.strip('/').split('/')[:-1])
 
-def get_git_project_files():
-    """Retrieve a list of all non-ignored files, including untracked files,
-    excluding deleted files.
+    for directory, directories, files in os.walk(scan_dir):
+        if '__init__.py' in files:
+            packages.append((os.path.relpath(directory,
+                                             top_dir).replace('/', '.')))
 
-    :return: sorted list of git project files
-    :rtype: :class:`list`
-    """
-    cached_and_untracked_files = git_ls_files(
-        '--cached',  # All files cached in the index
-        '--others',  # Untracked files
-        # Exclude untracked files that would be excluded by .gitignore, etc.
-        '--exclude-standard')
-    uncommitted_deleted_files = git_ls_files('--deleted')
-
-    # Since sorting of files in a set is arbitrary, return a sorted list to
-    # provide a well-defined order to tools like flake8, etc.
-    return sorted(cached_and_untracked_files - uncommitted_deleted_files)
-
-
-def git_ls_files(*cmd_args):
-    """Run ``git ls-files`` in the top-level project directory. Arguments go
-    directly to execution call.
-
-    :return: set of file names
-    :rtype: :class:`set`
-    """
-    cmd = ['git', 'ls-files']
-    cmd.extend(cmd_args)
-    return set(subprocess.check_output(cmd).splitlines())
-
-
-def print_success_message(message):
-    """Print a message indicating success in green color to STDOUT.
-
-    :param message: the message to print
-    :type message: :class:`str`
-    """
-    try:
-        import colorama
-        print(colorama.Fore.GREEN + message + colorama.Fore.RESET)
-    except ImportError:
-        print(message)
-
-
-def print_failure_message(message):
-    """Print a message indicating failure in red color to STDERR.
-
-    :param message: the message to print
-    :type message: :class:`str`
-    """
-    try:
-        import colorama
-        print(colorama.Fore.RED + message + colorama.Fore.RESET,
-              file=sys.stderr)
-    except ImportError:
-        print(message, file=sys.stderr)
+    return packages
 
 
 def read(filename):
@@ -137,122 +113,176 @@ def read(filename):
         return f.read()
 
 
-def _lint():
-    """Run lint and return an exit code."""
-    # Flake8 doesn't have an easy way to run checks using a Python function, so
-    # just fork off another process to do it.
+class PyTestCommand(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to pytest")]
 
-    # Python 3 compat:
-    # - The result of subprocess call outputs are byte strings, meaning we need
-    #   to pass a byte string to endswith.
-    project_python_files = [filename for filename in get_project_files()
-                            if filename.endswith(b'.py')]
-    retcode = subprocess.call(
-        ['flake8', '--max-complexity=10'] + project_python_files)
-    if retcode == 0:
-        print_success_message('No style errors')
-    return retcode
-
-
-def _test():
-    """Run the unit tests.
-
-    :return: exit code
-    """
-    # Make sure to import pytest in this function. For the reason, see here:
-    # <http://pytest.org/latest/goodpractises.html#integration-with-setuptools-test-commands>  # NOPEP8
-    import pytest
-    # This runs the unit tests.
-    # It also runs doctest, but only on the modules in TESTS_DIRECTORY.
-    return pytest.main(PYTEST_FLAGS + [TESTS_DIRECTORY])
-
-
-def _test_all():
-    """Run lint and tests.
-
-    :return: exit code
-    """
-    return _lint() + _test()
-
-
-# The following code is to allow tests to be run with `python setup.py test'.
-# The main reason to make this possible is to allow tests to be run as part of
-# Setuptools' automatic run of 2to3 on the source code. The recommended way to
-# run tests is still `paver test_all'.
-# See <http://pythonhosted.org/setuptools/python3.html>
-# Code based on <http://pytest.org/latest/goodpractises.html#integration-with-setuptools-test-commands>  # NOPEP8
-class TestAllCommand(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        # These are fake, and just set to appease distutils and setuptools.
-        self.test_suite = True
-        self.test_args = []
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = ''
 
     def run_tests(self):
-        raise SystemExit(_test_all())
+        # import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(PYTEST_FLAGS + [TESTS_DIRECTORY])
+        sys.exit(errno)
 
+
+cmdclass['test'] = PyTestCommand
+
+
+class CleanCommand(cmd.Command):
+    """A custom command to run Pylint on all Python source files."""
+
+    description = 'run source clean-up'
+    user_options = []
+
+    def initialize_options(self):
+        """Set default values for options."""
+        pass
+
+    def finalize_options(self):
+        """Post-process options."""
+        pass
+
+    def run(self):
+        """Run command."""
+        if os.path.exists(os.path.join(MYDIR, 'build')):
+            print("Removing Build")
+            shutil.rmtree(os.path.join(MYDIR, 'build'))
+
+        if os.path.exists(os.path.join(MYDIR, '.eggs')):
+            print("Removing .eggs")
+            shutil.rmtree(os.path.join(MYDIR, '.eggs'))
+
+        def clean(diretory, files):
+            # __pyc__
+            filenames = glob.glob(os.path.join(directory, '%s' %
+                                               (files,)))
+            for filename in filenames:
+                print("Removing %s" % filename)
+                if os.path.isdir(filename):
+                    shutil.rmtree(filename)
+                else:
+                    os.remove(filename)
+
+        for directory, directories, files in os.walk(os.path.join(MYDIR,
+                                                                  PACKAGE)):
+            clean(directory, '__pycache__')
+            clean(directory, '*.pyc')
+            clean(directory, '*.so')
+
+
+# Add Clean command
+cmdclass['clean'] = CleanCommand
+
+
+class CythonizeCommand(cmd.Command):
+    """A custom command to run Pylint on all Python source files."""
+
+    description = 'build cython source c files'
+    user_options = []
+
+    def initialize_options(self):
+        """Set default values for options."""
+        pass
+
+    def finalize_options(self):
+        """Post-process options."""
+        pass
+
+    def run(self):
+        """Run command."""
+        try:
+            from Cython.Build import cythonize
+            files = []
+            for package in list_packages(PACKAGE):
+                for module in list_modules(os.path.join(MYDIR,
+                                                        *package.split('.'))):
+                    files.append(os.path.join(*(package.split('.') +
+                                                [module + '.py'])))
+
+            cythonize(files)
+
+        except ImportError:
+            print('No Cython installed')
+
+
+# Add Clean command
+cmdclass['cythonize'] = CythonizeCommand
+
+# CYTHON / C sources compile
+try:
+    from Cython.Distutils import build_ext
+
+    ext_modules = [
+        Extension(
+            package + '.' + module,
+            [os.path.join(*(package.split('.') + [module + '.py']))]
+        )
+        for package in list_packages(PACKAGE)
+        for module in list_modules(os.path.join(MYDIR, *package.split('.')))
+    ]
+
+    cmdclass['build_ext'] = build_ext
+except ImportError:
+    ext_modules = []
+    print('\nNOTE: Cython not installed. '
+          'Luxon will still work fine, but may run '
+          'slower.\n')
 
 # define install_requires for specific Python versions
 python_version_specific_requires = []
 
-# as of Python >= 2.7 and >= 3.2, the argparse module is maintained within
-# the Python standard library, otherwise we install it as a separate package
-if sys.version_info < (2, 7) or (3, 0) <= sys.version_info < (3, 3):
-    python_version_specific_requires.append('argparse')
+# As of Python >= 2.7 and >= 3.2, the argparse module is maintained within
+# the Python standard library, we install it as a separate package
+python_version_specific_requires.append('argparse')
 
-install_requires = []
-if os.path.exists('requirements.txt'):
-    with open('requirements.txt') as fh:
-        for req in fh:
-            install_requires.append(req)
+# install-requires.txt as install_requires
+# minimal dependencies to run.
+install_requires = requirements('install-requires.txt')
+
+# docs-requires.txt as docs_requires
+# minimal dependencies to run.
+docs_requires = requirements('docs-requires.txt')
+
+# tests-requires.txt as tests_requires
+# minimal dependencies to run.
+tests_requires = requirements('tests-requires.txt')
+
+# dependency-links.txt as dependency_links
+# locations of where to find dependencies within
+# install-requires.txt ie github.
+# setuptools does work with url format for pip.
+dependency_links = requirements('dependency-links.txt')
 
 # See here for more options:
 # <http://pythonhosted.org/setuptools/setuptools.html>
 setup_dict = dict(
-    name= '%s' % module,
+    name=metadata.package,
     version=metadata.version,
-    author=metadata.authors[0],
-    author_email=metadata.emails[0],
-    maintainer=metadata.authors[0],
-    maintainer_email=metadata.emails[0],
+    author=metadata.author,
+    author_email=metadata.email,
+    maintainer=metadata.author,
+    maintainer_email=metadata.email,
     license=metadata.license,
     url=metadata.url,
     description=metadata.description,
     long_description=read('README.rst'),
     include_package_data=True,
-    # Find a list of classifiers here:
-    # <http://pypi.python.org/pypi?%3Aaction=list_classifiers>
-    classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
-        'Natural Language :: English',
-        'Operating System :: POSIX :: Linux',
-        'Operating System :: POSIX :: BSD :: FreeBSD',
-        'Operating System :: MacOS :: MacOS X',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: Internet'
-    ],
+    classifiers=metadata.classifiers,
     packages=find_packages(exclude=(TESTS_DIRECTORY,)),
-    install_requires=[
-        # your module dependencies
-    ] + python_version_specific_requires,
+    install_requires=[] + python_version_specific_requires + install_requires,
+    dependency_links=dependency_links,
     # Allow tests to be run with `python setup.py test'.
-    tests_require=[
-        'pytest==2.5.1',
-        'mock==1.0.1',
-        'flake8==2.1.0',
-    ],
-    cmdclass={'test': TestAllCommand},
+    tests_require=install_requires + tests_requires,
+    cmdclass=cmdclass,
+    ext_modules=ext_modules,
     zip_safe=False,  # don't use eggs
     entry_points={
         'console_scripts': [
-            'pyipcalc = pyipcalc.ipcalc:entry_point'                       
-        ],  
-    } 
+            'pyipcalc = pyipcalc.ipcalc:entry_point'
+        ],
+    }
 )
 
 

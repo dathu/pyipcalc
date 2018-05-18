@@ -13,7 +13,6 @@ graft tests
 global-exclude *.pyc
 
 # Setup-related things
-include pavement.py
 include requirements-dev.txt
 include requirements.txt
 include setup.py
