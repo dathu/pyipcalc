@@ -322,6 +322,42 @@ def int_64_to_128(val1, val2):
 
     return (val1 << 64) + val2
 
+def int_128_to_32(ip):
+    """Binary split 128 bit integer to 4 32bit values.
+
+    This is used for storing 128bit IP Addressses in integer format in
+    database. Its easier to search integer values.
+
+    Args:
+        ip (int): IPv4 / IPv6 Address.
+
+    Returns:
+        tuple: (first 32bits, second 32bits, third 32 bits, last 32bits)
+    """
+    int1 = ip >> 96
+    int2 = (ip & 0x000000ffffffff0000000000000000) >> 64
+    int3 = (ip & 0x00000000000000ffffffff00000000) >> 32
+    int4 = ip & 0x0000000000000000000000ffffffff
+
+    return (int1, int2, int3, int4)
+
+def int_32_to_128(val1, val2, val3, val4):
+    """Binary join 128 bit integer from four 32bit values.
+
+    This is used for storing 128bit IP Addressses in integer format in
+    database. Its easier to search integer values.
+
+    Args:
+        val1 (int): First 32Bits.
+        val2 (int): Second 32Bits.
+        val3 (int): Third 32Bits.
+        val4 (int): Last 32Bits.
+
+    Returns:
+        int: IP integer value.
+    """
+
+    return (val1 << 96) + (val2 << 64) + (val3 << 32) + val4
 
 def supernet(ipn1, ipn2, min_bits=None):
     """Create supernet IPNetwork Object based on two IPNetwork Objects.

@@ -48,3 +48,7 @@ class IPCalc(unittest.TestCase):
         self.assertEqual('fff0:0000:0000:0000:ffff:ffff:ffff:ffff',
                          pyipcalc.int_to_ip(340199290171201906239764863564210241535,
                                         6))
+        self.assertEqual(pyipcalc.int_128_to_32(340199290171201906239764863564210241535),
+                         (4293918720, 0, 4294967295, 4294967295))
+        self.assertEqual(pyipcalc.int_32_to_128(4293918720, 0, 4294967295, 4294967295),
+                         340199290171201906239764863564210241535)
