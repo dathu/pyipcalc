@@ -8,11 +8,11 @@ Information describing the project.
 package = 'pyipcalc'
 project = "Python IP Calculator Module"
 project_no_spaces = project.replace(' ', '')
-version = '2.0.1'
+version = '2.0.3'
 description = 'Python IP Calculator Module'
 authors = ['Christiaan Frans Rademan', 'Dave Kruger']
 authors_string = ', '.join(authors)
 emails = ['christiaan.rademan@gmail.com']
 license = 'BSD3-Clause'
-copyright = '2017 ' + authors_string
+copyright = '2017 - 2018' + authors_string
 url = 'http://www.tachyonic.co.za/'
