@@ -11,6 +11,7 @@ class IPCalc(unittest.TestCase):
         net = pyipcalc.IPNetwork('192.168.0.0/25')
         net2 = pyipcalc.IPNetwork('192.168.0.1/30')
         net3 = pyipcalc.IPNetwork('192.168.0.128/25')
+        net4 = pyipcalc.IPNetwork('192.168.0.0/24')
         self.assertEqual('192.168.0.0/25', net.prefix())
         self.assertEqual('192.168.0.0', net.network())
         self.assertEqual('192.168.0.1', net.first())
@@ -28,6 +29,7 @@ class IPCalc(unittest.TestCase):
             
         self.assertEqual(True, contains(net2, net))
         self.assertEqual(False, contains(net3, net))
+        self.assertEqual(False, contains(net4, net))
         self.assertEqual('192.168.0.0/24', pyipcalc.supernet(net,
                          net3).prefix())
         self.assertEqual(net[5].prefix(), '192.168.0.5/32')

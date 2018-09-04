@@ -335,9 +335,9 @@ def int_128_to_32(ip):
         tuple: (first 32bits, second 32bits, third 32 bits, last 32bits)
     """
     int1 = ip >> 96
-    int2 = (ip & 0x000000ffffffff0000000000000000) >> 64
-    int3 = (ip & 0x00000000000000ffffffff00000000) >> 32
-    int4 = ip & 0x0000000000000000000000ffffffff
+    int2 = (ip & 0xffffffff0000000000000000) >> 64
+    int3 = (ip & 0xffffffff00000000) >> 32
+    int4 = ip & 0xffffffff
 
     return (int1, int2, int3, int4)
 
@@ -652,10 +652,11 @@ class IPNetwork(object):
         if self._version != ip._version:
             raise IPPrefixError(ip)
 
-        if self._network & self._mask == ip._network & self._mask:
+        if self._network & self._mask == ip._network & self._mask and \
+                self._bits <= ip._bits:
             return True
-        else:
-            return False
+
+        return False
 
     def contains(self, ip):
         return self.__contains__(ip)
