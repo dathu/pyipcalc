@@ -9,7 +9,7 @@ package = 'pyipcalc'
 project = "Tachyonic Project " + package
 project_no_spaces = project.replace(' ', '')
 # Please follow https://www.python.org/dev/peps/pep-0440/
-version = '3.0.1'
+version = '3.0.2'
 description = 'Python IP Calculator Module'
 author = 'Myria Solutions (PTY) Ltd'
 email = 'project@tachyonic.org'
